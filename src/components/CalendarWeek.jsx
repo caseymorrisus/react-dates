@@ -8,12 +8,14 @@ const propTypes = forbidExtraProps({
   children: or([childrenOfType(CalendarDay), childrenOfType(CustomizableCalendarDay)]).isRequired,
 });
 
-export default function CalendarWeek({ children }) {
-  return (
-    <tr>
-      {children}
-    </tr>
-  );
+export default class CalendarWeek extends React.PureComponent {
+  render() {
+    return (
+      <tr>
+        {this.props.children}
+      </tr>
+    );
+  }
 }
 
 CalendarWeek.propTypes = propTypes;
