@@ -33,9 +33,6 @@ node_modules
 .node_repl_history
 
 # build folder
-lib
-esm
-.idea
 
 # gh-pages
 _gh-pages
@@ -47,4 +44,3 @@ yarn.lock
 package-lock.json
 
 css/styles.css
-
