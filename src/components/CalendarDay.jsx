@@ -1,16 +1,73 @@
-import React from "react";
-import PropTypes from "prop-types";
-import momentPropTypes from "react-moment-proptypes";
-import { forbidExtraProps, nonNegativeInteger } from "airbnb-prop-types";
-import { css, withStyles, withStylesPropTypes } from "react-with-styles";
-import moment from "moment";
+import React from 'react';
+import PropTypes from 'prop-types';
+import momentPropTypes from 'react-moment-proptypes';
+import { forbidExtraProps, nonNegativeInteger } from 'airbnb-prop-types';
+import { css, withStyles, withStylesPropTypes } from 'react-with-styles';
+import moment from 'moment';
+// import shallowCompare from 'react-addons-shallow-compare';
 
-import { CalendarDayPhrases } from "../defaultPhrases";
-import getPhrasePropTypes from "../utils/getPhrasePropTypes";
-import getCalendarDaySettings from "../utils/getCalendarDaySettings";
-import ModifiersShape from "../shapes/ModifiersShape";
+import { CalendarDayPhrases } from '../defaultPhrases';
+import getPhrasePropTypes from '../utils/getPhrasePropTypes';
+import getCalendarDaySettings from '../utils/getCalendarDaySettings';
+import ModifiersShape from '../shapes/ModifiersShape';
+import baseClass, { pureComponentAvailable } from '../utils/baseClass';
 
-import { DAY_SIZE } from "../constants";
+import { DAY_SIZE } from '../constants';
+
+function eqSet(as, bs) {
+  if (as.size !== bs.size) return false;
+  for (var a of as) if (!bs.has(a)) return false;
+  return true;
+}
+
+function is(x, y) {
+  // SameValue algorithm
+  if (x === y) {
+    // Steps 1-5, 7-10
+    // Steps 6.b-6.e: +0 != -0
+    // Added the nonzero y check to make Flow happy, but it is redundant
+    return x !== 0 || y !== 0 || 1 / x === 1 / y;
+  } else {
+    if (x.size && y.size) {
+      return eqSet(x, y)
+    }
+    // Step 6.a: NaN == NaN
+    return x !== x && y !== y;
+  }
+}
+
+function shallowEqual(objA, objB) {
+  if (is(objA, objB)) {
+    return true;
+  }
+
+  if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+    return false;
+  }
+
+  var keysA = Object.keys(objA);
+  var keysB = Object.keys(objB);
+
+  if (keysA.length !== keysB.length) {
+    return false;
+  }
+
+  // Test for A's keys different from B.
+  for (var i = 0; i < keysA.length; i++) {
+    if (!hasOwnProperty.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function shallowCompare(instance, nextProps, nextState) {
+  return (
+    !shallowEqual(instance.props, nextProps) ||
+    !shallowEqual(instance.state, nextState)
+  );
+}
 
 const propTypes = forbidExtraProps({
   ...withStylesPropTypes,
@@ -27,7 +84,7 @@ const propTypes = forbidExtraProps({
   ariaLabelFormat: PropTypes.string,
 
   // internationalization
-  phrases: PropTypes.shape(getPhrasePropTypes(CalendarDayPhrases))
+  phrases: PropTypes.shape(getPhrasePropTypes(CalendarDayPhrases)),
 });
 
 const defaultProps = {
@@ -41,13 +98,15 @@ const defaultProps = {
   onDayMouseEnter() {},
   onDayMouseLeave() {},
   renderDayContents: null,
-  ariaLabelFormat: "dddd, LL",
+  ariaLabelFormat: 'dddd, LL',
 
   // internationalization
-  phrases: CalendarDayPhrases
+  phrases: CalendarDayPhrases,
 };
 
-class CalendarDay extends React.PureComponent {
+const BaseClass = baseClass();
+
+class CalendarDay extends React.Component {
   constructor(...args) {
     super(...args);
 
@@ -61,6 +120,11 @@ class CalendarDay extends React.PureComponent {
         this.buttonRef.focus();
       }
     }
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    const compare = shallowCompare(this, nextProps, nextState);
+    return compare;
   }
 
   onDayClick(day, e) {
@@ -82,7 +146,7 @@ class CalendarDay extends React.PureComponent {
     const { onDayClick } = this.props;
 
     const { key } = e;
-    if (key === "Enter" || key === " ") {
+    if (key === 'Enter' || key === ' ') {
       onDayClick(day, e);
     }
   }
@@ -101,7 +165,7 @@ class CalendarDay extends React.PureComponent {
       renderDayContents,
       tabIndex,
       styles,
-      phrases
+      phrases,
     } = this.props;
 
     if (!day) return <td />;
@@ -112,13 +176,13 @@ class CalendarDay extends React.PureComponent {
       selected,
       hoveredSpan,
       isOutsideRange,
-      ariaLabel
+      ariaLabel,
     } = getCalendarDaySettings(
       day,
       ariaLabelFormat,
       daySize,
       modifiers,
-      phrases
+      phrases,
     );
 
     return (
@@ -128,50 +192,50 @@ class CalendarDay extends React.PureComponent {
           useDefaultCursor && styles.CalendarDay__defaultCursor,
           styles.CalendarDay__default,
           isOutsideDay && styles.CalendarDay__outside,
-          modifiers.has("today") && styles.CalendarDay__today,
-          modifiers.has("first-day-of-week") &&
-            styles.CalendarDay__firstDayOfWeek,
-          modifiers.has("last-day-of-week") &&
-            styles.CalendarDay__lastDayOfWeek,
-          modifiers.has("hovered-offset") && styles.CalendarDay__hovered_offset,
-          modifiers.has("highlighted-calendar") &&
-            styles.CalendarDay__highlighted_calendar,
-          modifiers.has("blocked-minimum-nights") &&
-            styles.CalendarDay__blocked_minimum_nights,
-          modifiers.has("blocked-calendar") &&
-            styles.CalendarDay__blocked_calendar,
+          modifiers.has('today') && styles.CalendarDay__today,
+          modifiers.has('first-day-of-week')
+            && styles.CalendarDay__firstDayOfWeek,
+          modifiers.has('last-day-of-week')
+            && styles.CalendarDay__lastDayOfWeek,
+          modifiers.has('hovered-offset') && styles.CalendarDay__hovered_offset,
+          modifiers.has('highlighted-calendar')
+            && styles.CalendarDay__highlighted_calendar,
+          modifiers.has('blocked-minimum-nights')
+            && styles.CalendarDay__blocked_minimum_nights,
+          modifiers.has('blocked-calendar')
+            && styles.CalendarDay__blocked_calendar,
           hoveredSpan && styles.CalendarDay__hovered_span,
-          modifiers.has("selected-span") && styles.CalendarDay__selected_span,
-          modifiers.has("last-in-range") && styles.CalendarDay__last_in_range,
-          modifiers.has("selected-start") && styles.CalendarDay__selected_start,
-          modifiers.has("selected-end") && styles.CalendarDay__selected_end,
+          modifiers.has('selected-span') && styles.CalendarDay__selected_span,
+          modifiers.has('last-in-range') && styles.CalendarDay__last_in_range,
+          modifiers.has('selected-start') && styles.CalendarDay__selected_start,
+          modifiers.has('selected-end') && styles.CalendarDay__selected_end,
           selected && styles.CalendarDay__selected,
           isOutsideRange && styles.CalendarDay__blocked_out_of_range,
-          daySizeStyles
+          daySizeStyles,
         )}
         role="button" // eslint-disable-line jsx-a11y/no-noninteractive-element-to-interactive-role
         ref={this.setButtonRef}
         aria-label={ariaLabel}
-        onMouseEnter={e => {
+        onMouseEnter={(e) => {
           this.onDayMouseEnter(day, e);
         }}
-        onMouseLeave={e => {
+        onMouseLeave={(e) => {
           this.onDayMouseLeave(day, e);
         }}
-        onMouseUp={e => {
+        onMouseUp={(e) => {
           e.currentTarget.blur();
         }}
-        onClick={e => {
+        onClick={(e) => {
           this.onDayClick(day, e);
         }}
-        onKeyDown={e => {
+        onKeyDown={(e) => {
           this.onKeyDown(day, e);
         }}
         tabIndex={tabIndex}
       >
         {renderDayContents
           ? renderDayContents(day, modifiers)
-          : day.format("D")}
+          : day.format('D')}
       </td>
     );
   }
@@ -184,18 +248,18 @@ export { CalendarDay as PureCalendarDay };
 export default withStyles(
   ({ reactDates: { color, font } }) => ({
     CalendarDay: {
-      boxSizing: "border-box",
-      cursor: "pointer",
+      boxSizing: 'border-box',
+      cursor: 'pointer',
       fontSize: font.size,
-      textAlign: "center",
+      textAlign: 'center',
 
-      ":active": {
-        outline: 0
-      }
+      ':active': {
+        outline: 0,
+      },
     },
 
     CalendarDay__defaultCursor: {
-      cursor: "default"
+      cursor: 'default',
     },
 
     CalendarDay__default: {
@@ -203,17 +267,17 @@ export default withStyles(
       color: color.text,
       background: color.background,
 
-      ":hover": {
+      ':hover': {
         background: color.core.borderLight,
         border: `1px solid ${color.core.borderLight}`,
-        color: "inherit"
-      }
+        color: 'inherit',
+      },
     },
 
     CalendarDay__hovered_offset: {
       background: color.core.borderBright,
       border: `1px double ${color.core.borderLight}`,
-      color: "inherit"
+      color: 'inherit',
     },
 
     CalendarDay__outside: {
@@ -221,9 +285,9 @@ export default withStyles(
       background: color.outside.backgroundColor,
       color: color.outside.color,
 
-      ":hover": {
-        border: 0
-      }
+      ':hover': {
+        border: 0,
+      },
     },
 
     CalendarDay__blocked_minimum_nights: {
@@ -231,30 +295,30 @@ export default withStyles(
       border: `1px solid ${color.minimumNights.borderColor}`,
       color: color.minimumNights.color,
 
-      ":hover": {
+      ':hover': {
         background: color.minimumNights.backgroundColor_hover,
-        color: color.minimumNights.color_active
+        color: color.minimumNights.color_active,
       },
 
-      ":active": {
+      ':active': {
         background: color.minimumNights.backgroundColor_active,
-        color: color.minimumNights.color_active
-      }
+        color: color.minimumNights.color_active,
+      },
     },
 
     CalendarDay__highlighted_calendar: {
       background: color.highlighted.backgroundColor,
       color: color.highlighted.color,
 
-      ":hover": {
+      ':hover': {
         background: color.highlighted.backgroundColor_hover,
-        color: color.highlighted.color_active
+        color: color.highlighted.color_active,
       },
 
-      ":active": {
+      ':active': {
         background: color.highlighted.backgroundColor_active,
-        color: color.highlighted.color_active
-      }
+        color: color.highlighted.color_active,
+      },
     },
 
     CalendarDay__selected_span: {
@@ -262,25 +326,25 @@ export default withStyles(
       border: `1px double ${color.selectedSpan.borderColor}`,
       color: color.selectedSpan.color,
 
-      ":hover": {
+      ':hover': {
         background: color.selectedSpan.backgroundColor_hover,
         border: `1px double ${color.selectedSpan.borderColor}`,
-        color: color.selectedSpan.color_active
+        color: color.selectedSpan.color_active,
       },
 
-      ":active": {
+      ':active': {
         background: color.selectedSpan.backgroundColor_active,
         border: `1px double ${color.selectedSpan.borderColor}`,
-        color: color.selectedSpan.color_active
-      }
+        color: color.selectedSpan.color_active,
+      },
     },
 
     CalendarDay__last_in_range: {
-      borderStyle: "solid",
+      borderStyle: 'solid',
 
-      ":hover": {
-        borderStyle: "solid"
-      }
+      ':hover': {
+        borderStyle: 'solid',
+      },
     },
 
     CalendarDay__selected: {
@@ -288,17 +352,17 @@ export default withStyles(
       border: `1px double ${color.selected.borderColor}`,
       color: color.selected.color,
 
-      ":hover": {
+      ':hover': {
         background: color.selected.backgroundColor_hover,
         border: `1px double ${color.selected.borderColor}`,
-        color: color.selected.color_active
+        color: color.selected.color_active,
       },
 
-      ":active": {
+      ':active': {
         background: color.selected.backgroundColor_active,
         border: `1px double ${color.selected.borderColor}`,
-        color: color.selected.color_active
-      }
+        color: color.selected.color_active,
+      },
     },
 
     CalendarDay__hovered_span: {
@@ -306,17 +370,17 @@ export default withStyles(
       border: `1px double ${color.hoveredSpan.borderColor}`,
       color: color.hoveredSpan.color,
 
-      ":hover": {
+      ':hover': {
         background: color.hoveredSpan.backgroundColor_hover,
         border: `1px double ${color.hoveredSpan.borderColor}`,
-        color: color.hoveredSpan.color_active
+        color: color.hoveredSpan.color_active,
       },
 
-      ":active": {
+      ':active': {
         background: color.hoveredSpan.backgroundColor_active,
         border: `1px double ${color.hoveredSpan.borderColor}`,
-        color: color.hoveredSpan.color_active
-      }
+        color: color.hoveredSpan.color_active,
+      },
     },
 
     CalendarDay__blocked_calendar: {
@@ -324,17 +388,17 @@ export default withStyles(
       border: `1px solid ${color.blocked_calendar.borderColor}`,
       color: color.blocked_calendar.color,
 
-      ":hover": {
+      ':hover': {
         background: color.blocked_calendar.backgroundColor_hover,
         border: `1px solid ${color.blocked_calendar.borderColor}`,
-        color: color.blocked_calendar.color_active
+        color: color.blocked_calendar.color_active,
       },
 
-      ":active": {
+      ':active': {
         background: color.blocked_calendar.backgroundColor_active,
         border: `1px solid ${color.blocked_calendar.borderColor}`,
-        color: color.blocked_calendar.color_active
-      }
+        color: color.blocked_calendar.color_active,
+      },
     },
 
     CalendarDay__blocked_out_of_range: {
@@ -342,24 +406,24 @@ export default withStyles(
       border: `1px solid ${color.blocked_out_of_range.borderColor}`,
       color: color.blocked_out_of_range.color,
 
-      ":hover": {
+      ':hover': {
         background: color.blocked_out_of_range.backgroundColor_hover,
         border: `1px solid ${color.blocked_out_of_range.borderColor}`,
-        color: color.blocked_out_of_range.color_active
+        color: color.blocked_out_of_range.color_active,
       },
 
-      ":active": {
+      ':active': {
         background: color.blocked_out_of_range.backgroundColor_active,
         border: `1px solid ${color.blocked_out_of_range.borderColor}`,
-        color: color.blocked_out_of_range.color_active
-      }
+        color: color.blocked_out_of_range.color_active,
+      },
     },
 
     CalendarDay__selected_start: {},
     CalendarDay__selected_end: {},
     CalendarDay__today: {},
     CalendarDay__firstDayOfWeek: {},
-    CalendarDay__lastDayOfWeek: {}
+    CalendarDay__lastDayOfWeek: {},
   }),
-  { pureComponent: true }
+  { pureComponent: pureComponentAvailable },
 )(CalendarDay);
