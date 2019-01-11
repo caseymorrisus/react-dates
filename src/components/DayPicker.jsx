@@ -1199,7 +1199,7 @@ export default withStyles(({
   },
 
   DayPicker_weekHeaders__horizontal: {
-    marginLeft: noflip(spacing.dayPickerHorizontalPadding),
+    marginLeft: noflip(0),
   },
 
   DayPicker_weekHeader: {

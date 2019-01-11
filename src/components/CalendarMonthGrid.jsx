@@ -387,7 +387,7 @@ export default withStyles(({
 
   CalendarMonthGrid__horizontal: {
     position: 'absolute',
-    left: noflip(spacing.dayPickerHorizontalPadding),
+    left: noflip(0),
   },
 
   CalendarMonthGrid__vertical: {
