@@ -91,6 +91,7 @@ var propTypes = process.env.NODE_ENV !== "production" ? forbidExtraProps({
   noNavButtons: PropTypes.bool,
   onPrevMonthClick: PropTypes.func,
   onNextMonthClick: PropTypes.func,
+  onMultiplyScrollableMonths: PropTypes.func,
   onOutsideClick: PropTypes.func,
   renderCalendarDay: PropTypes.func,
   renderDayContents: PropTypes.func,
@@ -145,6 +146,7 @@ var defaultProps = {
   noNavButtons: false,
   onPrevMonthClick: function onPrevMonthClick() {},
   onNextMonthClick: function onNextMonthClick() {},
+  onMultiplyScrollableMonths: function onMultiplyScrollableMonths() {},
   onOutsideClick: function onOutsideClick() {},
   renderCalendarDay: undefined,
   renderDayContents: null,
@@ -770,6 +772,8 @@ function (_ref) {
   }, {
     key: "onMultiplyScrollableMonths",
     value: function onMultiplyScrollableMonths() {
+      var _this3 = this;
+
       var _this$props10 = this.props,
           numberOfMonths = _this$props10.numberOfMonths,
           enableOutsideDays = _this$props10.enableOutsideDays;
@@ -781,12 +785,16 @@ function (_ref) {
       var newVisibleDays = getVisibleDays(nextMonth, numberOfMonths, enableOutsideDays, true);
       this.setState({
         visibleDays: _objectSpread({}, visibleDays, this.getModifiers(newVisibleDays))
+      }, function () {
+        if (_this3.props.onMultiplyScrollableMonths) {
+          _this3.props.onMultiplyScrollableMonths(nextMonth.clone());
+        }
       });
     }
   }, {
     key: "getFirstFocusableDay",
     value: function getFirstFocusableDay(newMonth) {
-      var _this3 = this;
+      var _this4 = this;
 
       var _this$props11 = this.props,
           startDate = _this$props11.startDate,
@@ -815,7 +823,7 @@ function (_ref) {
         }
 
         var viableDays = days.filter(function (day) {
-          return !_this3.isBlocked(day);
+          return !_this4.isBlocked(day);
         });
 
         if (viableDays.length > 0) {
@@ -830,13 +838,13 @@ function (_ref) {
   }, {
     key: "getModifiers",
     value: function getModifiers(visibleDays) {
-      var _this4 = this;
+      var _this5 = this;
 
       var modifiers = {};
       Object.keys(visibleDays).forEach(function (month) {
         modifiers[month] = {};
         visibleDays[month].forEach(function (day) {
-          modifiers[month][toISODateString(day)] = _this4.getModifiersForDay(day);
+          modifiers[month][toISODateString(day)] = _this5.getModifiersForDay(day);
         });
       });
       return modifiers;
@@ -844,16 +852,16 @@ function (_ref) {
   }, {
     key: "getModifiersForDay",
     value: function getModifiersForDay(day) {
-      var _this5 = this;
+      var _this6 = this;
 
       return new Set(Object.keys(this.modifiers).filter(function (modifier) {
-        return _this5.modifiers[modifier](day);
+        return _this6.modifiers[modifier](day);
       }));
     }
   }, {
     key: "getStateForNewMonth",
     value: function getStateForNewMonth(nextProps) {
-      var _this6 = this;
+      var _this7 = this;
 
       var initialVisibleMonth = nextProps.initialVisibleMonth,
           numberOfMonths = nextProps.numberOfMonths,
@@ -863,7 +871,7 @@ function (_ref) {
       var initialVisibleMonthThunk = initialVisibleMonth || (startDate ? function () {
         return startDate;
       } : function () {
-        return _this6.today;
+        return _this7.today;
       });
       var currentMonth = initialVisibleMonthThunk();
       var withoutTransitionMonths = orientation === VERTICAL_SCROLLABLE;

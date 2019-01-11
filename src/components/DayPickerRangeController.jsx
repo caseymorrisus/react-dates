@@ -80,6 +80,7 @@ const propTypes = forbidExtraProps({
 
   onPrevMonthClick: PropTypes.func,
   onNextMonthClick: PropTypes.func,
+  onMultiplyScrollableMonths: PropTypes.func,
   onOutsideClick: PropTypes.func,
   renderCalendarDay: PropTypes.func,
   renderDayContents: PropTypes.func,
@@ -141,6 +142,7 @@ const defaultProps = {
 
   onPrevMonthClick() {},
   onNextMonthClick() {},
+  onMultiplyScrollableMonths() {},
   onOutsideClick() {},
 
   renderCalendarDay: undefined,
@@ -769,6 +771,10 @@ export default class DayPickerRangeController extends React.PureComponent {
         ...visibleDays,
         ...this.getModifiers(newVisibleDays),
       },
+    }, () => {
+      if (this.props.onMultiplyScrollableMonths) {
+        this.props.onMultiplyScrollableMonths(nextMonth.clone());
+      }
     });
   }
 
