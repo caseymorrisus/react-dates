@@ -1190,7 +1190,7 @@ export default withStyles(function (_ref3) {
       position: 'relative'
     },
     DayPicker_weekHeaders__horizontal: {
-      marginLeft: noflip(spacing.dayPickerHorizontalPadding)
+      marginLeft: noflip(0)
     },
     DayPicker_weekHeader: {
       color: color.placeholderText,

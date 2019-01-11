@@ -421,7 +421,7 @@
 }
 .CalendarMonthGrid__horizontal {
   position: absolute;
-  left: 9px
+  left: 0
 }
 .CalendarMonthGrid__vertical {
   margin: 0 auto
@@ -576,7 +576,7 @@
   position: relative
 }
 .DayPicker_weekHeaders__horizontal {
-  margin-left: 9px
+  margin-left: 0
 }
 .DayPicker_weekHeader {
   color: #757575;
